@@ -8,6 +8,9 @@ header {
   min-height: 500px;
   width: 100%;
   background: #161415 url(./images/header-background.jpg) no-repeat top center;
+  height: 100vh;
+  width: 100%;
+  background-attachment: fixed;
   background-size: cover !important;
   -webkit-background-size: cover !important;
   text-align: center;
@@ -47,6 +50,7 @@ header .banner-text h3 {
   width: 70%;
   text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.5);
 }
+
 header .banner-text h3 span,
 header .banner-text h3 a {
   color: #fff;

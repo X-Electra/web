@@ -20,14 +20,17 @@ function App() {
                 {resumeData.socialLinks &&
                   resumeData.socialLinks.map((item) => {
                     return (
-                      <li key={item.name}>
-                        <a href={item.url} target="_blank" rel="noreferrer" >
+                      <li key={item.name} >
+                        <a href={item.url}  target="_blank" rel="noreferrer" >
                           <i className={item.className} />
                         </a>
                       </li>
                     );
                   })}
               </ul>
+            <a href='/create' className="bg-white p-3 rounded-xl font-bold font-sans ">
+              Create Bot Script
+            </a>
             </div>
           </div>
         </header>
