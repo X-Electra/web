@@ -36,7 +36,7 @@ function CreateScript() {
       start: startScript,
     };
     try {
-      const response = await axios.post("http://localhost:3001/genBash", data, {
+      const response = await axios.post("https://api.thexapi.xyz/genBash", data, {
         headers: {
           "Content-Type": "application/json",
         },
