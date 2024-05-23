@@ -1,58 +1,67 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { IoIosAddCircle } from "react-icons/io";
 import axios from "axios";
 import Popup from "reactjs-popup";
 import "reactjs-popup/dist/index.css";
 
 function CreateScript() {
-  const [envVariables, setEnvVariables] = useState([{ key: "SUDO", value: "" }]);
+  const [envVariables, setEnvVariables] = useState([
+    { key: "SUDO", value: "" },
+  ]);
   const [bash, setBash] = useState("");
   const [open, setOpen] = useState(false);
+  const [platform, setPlatform] = useState("termux");
 
-  const addEnvVariable = () => {
-    setEnvVariables([...envVariables, { key: "", value: "" }]);
-  };
+  const addEnvVariable = useCallback(() => {
+    setEnvVariables((prev) => [...prev, { key: "", value: "" }]);
+  }, []);
 
-  const handleInputChange = (index, event) => {
+  const handleInputChange = useCallback((index, event) => {
     const { name, value } = event.target;
-    const newEnvVariables = [...envVariables];
-    if (name === "key") {
-      newEnvVariables[index].key = value.toUpperCase();
-    } else {
-      newEnvVariables[index].value = value;
-    }
-    setEnvVariables(newEnvVariables);
-  };
+    setEnvVariables((prev) => {
+      const newEnvVariables = [...prev];
+      newEnvVariables[index][name] =
+        name === "key" ? value.toUpperCase() : value;
+      return newEnvVariables;
+    });
+  }, []);
+
+  useEffect(() => {
+    console.log(platform);
+  }, [platform]);
+
+  const handlePlatformChange = useCallback((event) => {
+    setPlatform(event.target.value);
+  }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const form = event.target;
-    const gitUrl = form["git-url"].value;
-    const startScript = form["startScript"].value;
-
-    let data = {
+    const { "git-url": gitUrl, startScript } = event.target.elements;
+    const data = {
       config: envVariables,
-      git: gitUrl,
-      start: startScript,
+      git: gitUrl.value,
+      start: startScript.value,
+      platform: platform, // Pass platform to the data object
     };
     try {
-      const response = await axios.post("https://api.thexapi.xyz/genBash", data, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await axios.post(
+        "https://api.thexapi.xyz/genBash",
+        data,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
       setBash(response.data.data.bash);
-      setOpen(true); // Open the popup on successful response
+      setOpen(true);
     } catch (error) {
       console.error("Error:", error);
     }
   };
 
-  const handleCopy = () => {
+  const handleCopy = useCallback(() => {
     navigator.clipboard.writeText(bash);
     alert("Bash script copied to clipboard!");
-  };
-
+  }, [bash]);
   return (
     <div className="w-screen h-screen overflow-y-auto bg-[url(./images/header-background.jpg)] flex flex-col justify-center items-center">
       <div className="bg-white flex flex-col p-10 rounded-xl">
@@ -79,7 +88,7 @@ function CreateScript() {
                   required
                   className="mt-1 block w-1/2 shadow-sm border p-3 outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border-gray-300 rounded-md"
                   placeholder={
-                    env.key === "SUDO" ? "ENTER YOUR NUMBER " : "VALUE"
+                    env.key === "SUDO" ? "ENTER YOUR NUMBER" : "VALUE"
                   }
                 />
                 {index === envVariables.length - 1 && (
@@ -134,6 +143,40 @@ function CreateScript() {
             />
           </div>
 
+          <div className="flex flex-col gap-2">
+            <label htmlFor="termux" className="font-medium">
+              Choose the platform
+            </label>
+            <div className="flex gap-3">
+              <input
+                type="radio"
+                id="termux"
+                onChange={handlePlatformChange}
+                name="platform"
+                value="termux"
+                checked={platform === "termux"}
+              />
+              <label htmlFor="termux">Termux</label>
+            </div>
+            <div className="flex gap-3">
+              <input
+                type="radio"
+                id="ubuntu"
+                onChange={handlePlatformChange}
+                name="platform"
+                value="ubuntu"
+                checked={platform === "ubuntu"}
+              />
+              <label htmlFor="ubuntu">Ubuntu</label>
+            </div>
+          </div>
+
+          <div>
+            <p className="text-sm text-gray-500">
+              Note: You can leave the Github URL and Start Script fields empty.
+            </p>
+          </div>
+
           <div className="flex justify-center">
             <button
               type="submit"
@@ -144,7 +187,13 @@ function CreateScript() {
           </div>
         </form>
 
-        <Popup open={open} className="rounded-lg" onClose={() => setOpen(false)} modal closeOnDocumentClick>
+        <Popup
+          open={open}
+          className="rounded-lg"
+          onClose={() => setOpen(false)}
+          modal
+          closeOnDocumentClick
+        >
           <div className="p-5">
             <h2 className="text-2xl font-bold mb-4">Generated Bash Script</h2>
             <textarea
